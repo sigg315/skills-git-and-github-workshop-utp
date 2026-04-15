@@ -10,13 +10,30 @@ permissions:
   contents: write
   actions: write
   issues: write
+  administration: write
 
 env:
   STEP_1_FILE: ".github/steps/1-step.md"
 
 jobs:
+  enable_issues:
+    name: Habilitar Issues
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.is_template }}
+    steps:
+      - name: Activar Issues en el repositorio
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              has_issues: true
+            });
+
   start_exercise:
     if: ${{ !github.event.repository.is_template }}
+    needs: [enable_issues]
     name: Iniciar Ejercicio
     uses: skills/exercise-toolkit/.github/workflows/start-exercise.yml@v0.8.1
     with:
